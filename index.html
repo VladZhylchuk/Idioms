@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Idioms Quiz</title>
+<style>
+:root{
+--bg:#f5f5f7;
+--card:#ffffff;
+--text:#1d1d1f;
+--muted:#6e6e73;
+--border:#d2d2d7;
+--accent:#0071e3;
+--success:#e8f5e9;
+--error:#fdecec;
+}
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+background:var(--bg);
+color:var(--text);
+line-height:1.6;
+}
+.hero{
+text-align:center;
+padding:70px 20px 40px;
+}
+.hero h1{
+font-size:56px;
+font-weight:700;
+letter-spacing:-0.03em;
+margin:0;
+}
+.hero p{
+color:var(--muted);
+font-size:20px;
+max-width:700px;
+margin:12px auto;
+}
+.container{
+max-width:980px;
+margin:auto;
+padding:0 24px 60px;
+}
+.controls{
+position:sticky;
+top:0;
+background:rgba(245,245,247,.85);
+backdrop-filter:blur(16px);
+padding:18px 0;
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+z-index:10;
+}
+button{
+border:none;
+border-radius:999px;
+padding:12px 20px;
+font-size:15px;
+cursor:pointer;
+background:var(--accent);
+color:white;
+}
+button.secondary{
+background:white;
+color:var(--text);
+border:1px solid var(--border);
+}
+.score{
+margin-left:auto;
+font-weight:600;
+display:flex;
+align-items:center;
+}
+.section{
+margin:40px 0 20px;
+font-size:30px;
+font-weight:700;
+}
+.question{
+background:var(--card);
+border-radius:24px;
+padding:24px;
+margin:18px 0;
+box-shadow:0 4px 20px rgba(0,0,0,.04);
+border:1px solid rgba(0,0,0,.04);
+}
+.question.correct{background:var(--success)}
+.question.incorrect{background:var(--error)}
+.qtitle{
+font-weight:600;
+margin-bottom:12px;
+}
+label{
+display:block;
+padding:8px 0;
+}
+.answer{
+margin-top:12px;
+font-weight:600;
+color:var(--accent);
+}
+</style>
+</head>
+<body>
+<div class="hero">
+<h1>Idioms Mastery Quiz</h1>
+<p>60 questions. One small step for an English learner, one giant leap away from awkward textbook dialogues.</p>
+</div>
+
+<div class="container">
+<div class="controls">
+<button onclick="checkAnswers()">Check Answers</button>
+<button class="secondary" onclick="revealAnswers()">Reveal Answers</button>
+<button class="secondary" onclick="location.reload()">Restart</button>
+<div class="score" id="score">Score: 0 / 60</div>
+</div>
+
+<div class="section">Task 1 · Match the Definition</div>
+<div id="quiz1"></div>
+
+<div class="section">Task 2 · Fill the Gap</div>
+<div id="quiz2"></div>
+</div>
+
+<script>
+const idioms=[
+"as quiet as a mouse","take it easy","it's not rocket science","piece of cake","easier said than done","hard to swallow","bite off more than you can chew","cut corners","be hard on someone","hard pass","no hard feelings","cry over spilled milk","pull someone's leg","on easy street","easy does it","get off easy","between a rock and a hard place","safe and sound","once in a blue moon","bite the bullet","let's call it a day","the next thing I knew","even more so","steal someone's thunder","bent out of shape","if anything","I kid you not","barking up the wrong tree","the last straw","in the grand scheme of things"
+];
+
+const defs=[
+"very quiet","relax and don't worry","very easy to understand","very easy","more difficult in practice than in theory","difficult to accept","take on too much","do something cheaply or carelessly","be too critical","strong refusal","no resentment after disagreement","worry about a past mistake","joke with someone","living comfortably with money","be careful and slow","receive little punishment","stuck between two bad choices","unharmed and safe","very rarely","do something unpleasant but necessary","stop working for the day","suddenly found oneself in a situation","to an even greater degree","take attention from someone else's achievement","become unnecessarily upset","actually, on the contrary","I am telling the truth","accuse the wrong person","final annoyance before losing patience","when viewed from a broader perspective"
+];
+
+const gaps=[
+"During the movie the children were ___","You've worked all day, so ___","Learning this app is ___","The exam was a ___","Getting fit is ___","The truth was ___","He accepted too many projects and ___","They ___ to save money","Don't ___ yourself after one mistake","Skydiving? ___","We disagreed, but ___","There is no point to ___","I was only trying to ___","After the sale they were ___","Carry the glass carefully, ___","He broke the rule but ___","I was ___ and couldn't decide","Everyone arrived home ___","He visits us ___","I finally ___ and made the call","We've done enough, ___","We started talking and ___ it was midnight","The weather was bad and ___ in the mountains","She announced her news and ___","Don't get ___ over a joke","___, the challenge made me stronger","___, the dog really opened the door","If you blame me, you're ___","The rude email was ___","___, this problem is small"
+];
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let answers={};
+let q=1;
+
+function makeQuestion(parent,text,answer){
+ let opts=[answer];
+ while(opts.length<3){
+  let c=idioms[Math.floor(Math.random()*idioms.length)];
+  if(!opts.includes(c)) opts.push(c);
+ }
+ shuffle(opts);
+
+ const div=document.createElement('div');
+ div.className='question';
+ div.innerHTML=`<div class="qtitle">${q}. ${text}</div>`+
+ opts.map(o=>`<label><input type="radio" name="q${q}" value="${o}"> ${o}</label>`).join("");
+ parent.appendChild(div);
+ answers["q"+q]=answer;
+ q++;
+}
+
+const q1=document.getElementById("quiz1");
+for(let i=0;i<30;i++) makeQuestion(q1,`Which idiom means "${defs[i]}"?`,idioms[i]);
+
+const q2=document.getElementById("quiz2");
+for(let i=0;i<30;i++) makeQuestion(q2,gaps[i],idioms[i]);
+
+function checkAnswers(){
+ let score=0;
+ document.querySelectorAll('.question').forEach((box,idx)=>{
+  const name='q'+(idx+1);
+  const sel=document.querySelector(`input[name="${name}"]:checked`);
+  box.classList.remove('correct','incorrect');
+  if(sel){
+   if(sel.value===answers[name]){score++;box.classList.add('correct');}
+   else{box.classList.add('incorrect');}
+  }
+ });
+ document.getElementById('score').textContent=`Score: ${score} / 60`;
+}
+
+function revealAnswers(){
+ document.querySelectorAll('.question').forEach((box,idx)=>{
+   if(!box.querySelector('.answer')){
+      const d=document.createElement('div');
+      d.className='answer';
+      d.textContent='Answer: '+answers['q'+(idx+1)];
+      box.appendChild(d);
+   }
+ });
+}
+</script>
+</body>
+</html>
